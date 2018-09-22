@@ -6,4 +6,4 @@
 2. Some buttons
 3. Some input interface
 
-### The robot is just like [boston dog](https://github.com/NewSkellige/Atlas/tree/sim/sim/resource/bostondog.mp4)
+### The robot is just like [boston dog](https://v.qq.com/x/page/i0661a4bkeg.html)
