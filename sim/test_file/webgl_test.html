@@ -1,0 +1,27 @@
+<html>
+    <head>
+        <script type="text/javascript">
+            function main(){
+              const canvas = document.getElementById("glcanvas");
+              canvas.height = window.innerHeight;
+              canvas.width = window.innerWidth;
+
+              const gl = canvas.getContext("webgl");
+
+              if (!gl) {
+                  alert("Unable to initialize WebGL. Your browser or machine may not support it.");
+                  return;
+              }
+
+              gl.clearColor(0.1, 0.2, 0.3, 1.0);
+
+              gl.clear(gl.COLOR_BUFFER_BIT);
+            }
+        </script>
+    </head>
+    <body onload="main()">
+        <canvas id = "glcanvas">
+            Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
+        </canvas>
+    </body>
+</html>
