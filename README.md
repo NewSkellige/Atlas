@@ -7,6 +7,4 @@
 3. Some input interface
 
 ### The robot is just like that:
-<video id = "video" controls = "" preload = "none">
-    <source id = "mp4" src = "https://github.com/NewSkellige/Atlas/tree/sim/sim/resource/boston_dog.mp4" type = "video/mp4">
-</video>
+<iframe width="560" height="315" src="https://github.com/NewSkellige/Atlas/tree/sim/sim/resource/boston_dog.mp4" frameborder="0" allowfullscreen></iframe>
