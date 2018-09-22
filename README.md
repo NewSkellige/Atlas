@@ -5,3 +5,8 @@
 1. A robot dog
 2. Some buttons
 3. Some input interface
+
+### The robot is just like that:
+<video id = "video" controls = "" preload = "none">
+    <source id = "mp4" src = "https://github.com/cgcodeboy/Atlas/tree/sim/sim/resource/boston_dog.mp4" type = "video/mp4">
+</video>
