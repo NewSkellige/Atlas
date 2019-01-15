@@ -6,8 +6,15 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link href="../css/common.css" rel="stylesheet" type="text/css">
 <title>WebDog</title>
-<script src="../js/three.js" type="text/javascript" charset="utf-8"></script>
-<script src="../js/ObjectLoader.js" type="text/javascript" charset="utf-8"></script>
+<script src="../js/build/three.js" type="text/javascript" charset="utf-8"></script>
+<script src="../js/STLLoader.js" type="text/javascript" charset="utf-8"></script>
+<script src="../js/examples/js/loaders/ColladaLoader.js" type="text/javascript" charset="utf-8"></script>
+<script src="../js/examples/js/loaders/collada/Animation.js"></script>
+<script src="../js/examples/js/loaders/collada/AnimationHandler.js"></script>
+<script src="../js/examples/js/loaders/collada/KeyFrameAnimation.js"></script>
+<script src="../js/Inflate.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="../js/examples/js/libs/stats.min.js"></script>
+<script src="../js/examples/js/controls/OrbitControls.js"></script>
 <script src="../js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
 	$(function() {
@@ -60,9 +67,9 @@
 		</ul>
 		<h4 class = "cleftH4">参数设置</h4>
 		<ul  class = "cleftUl" style = "display:none;">
-			<li class = "cleftLi">速度:<input type = "text"/></li>
-			<li class = "cleftLi">方向:<input type = "text"/></li>
-			<li class = "cleftLi">次数:<input type = "text"/></li>
+			<li class = "cleftLi" >速度:<input type = "text" id = "speed" value = "2"/></li>
+			<li class = "cleftLi">方向:<input type = "text"  id = "direction"/></li>
+			<li class = "cleftLi" >次数:<input type = "text" id = "num"/></li>
 			<li class = "cleftLi"><input type = "submit" value = "开始"/></li>
 		</ul>
 	</div>
@@ -71,9 +78,26 @@
 		</div>
 		<script>
 			
-        	var scene = new THREE.Scene();
+			var scene = new THREE.Scene();
+			scene.background = new THREE.Color( 0xa0a0a0 );
+			scene.fog = new THREE.Fog( 0xa0a0a0, 200, 1000 );
+
+			var light = new THREE.HemisphereLight( 0xffffff, 0x444444 );
+			light.position.set( 0, 200, 0 );
+			scene.add( light );
+
+			light = new THREE.DirectionalLight( 0xffffff );
+			light.position.set( 0, 200, 100 );
+			light.castShadow = true;
+			light.shadow.camera.top = 180;
+			light.shadow.camera.bottom = - 100;
+			light.shadow.camera.left = - 120;
+			light.shadow.camera.right = 120;
+			scene.add( light );
         
         	var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        	camera.position.set( 0, 20, 20 );
+        	camera.lookAt(0,0,0);
         
         	var renderer = new THREE.WebGLRenderer();
         	
@@ -83,51 +107,71 @@
         	renderer.setSize(width, height);
         
         	document.getElementById("WebGL").appendChild(renderer.domElement);
-        	var geometry = new THREE.CubeGeometry(1,1,1);
-        	var material = new THREE.MeshBasicMaterial({color: 0x00ff00});
-        	var cube = new THREE.Mesh(geometry, material); 
-        	//scene.add(cube);
-        	
-        	var light=new THREE.PointLight(0xff0000);
-        	light.position.set(300,400,200);//光源的位置
-       		scene.add(light);//将光源加入到场景中
-  			scene.add(new THREE.AmbientLight(0x333333));//添加环境光  让背景 亮一点
-        	
-  			var model;
-        	var loader = new THREE.OBJLoader();
-        	loader.load( "../model/testobj.obj", 
-        		function ( object ) {
-        			model = object; 
-        			scene.add( object );
-        		}
-        	);
-        	
-        	camera.position.z = 5;
+			
+  			/*
+  			var loader = new THREE.STLLoader();
+  			loader.load( '../model/sphere.stl', function ( geometry ) {
+					material = new THREE.MeshPhongMaterial( { color: 0xff5533, specular: 0x111111, shininess: 200 } );
+					mesh = new THREE.Mesh( geometry, material );
+					model = mesh;
+					scene.add(mesh);
+  			});
+  			*/
+  			
+  			var loader = new THREE.ColladaLoader();
+  			loader.options.convertUpAxis = true;
+			loader.load( '../model/avatar.dae', function ( object) {
+				dae = object.scene;
+				dae.scale.multiplyScalar(200);
+				dae.updateMatrix();
+				scene.add(dae);
+			} );
+			
+						
+			var controls = new THREE.OrbitControls( camera, renderer.domElement );
+			controls.target.set( 0, 12, 0 );
+			camera.position.set( 2, 18, 28 );
+			controls.update();
+			
+									
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+			
+			$(function() {
+				$('.cleftH4').click(function() {
+					var loader = new THREE.STLLoader();
+		  			loader.load( '../model/sphere.stl', function ( geometry ) {
+		  				var material = new THREE.MeshPhongMaterial( { ambient: 0xff5533, color: 0xff5533, specular: 0x111111, shininess: 200 } );
+                        var mesh = new THREE.Mesh( geometry, material );
+						scene.add(mesh);
+		  			});
+				});
+			});
+
+			window.addEventListener( 'resize', onWindowResize, false );	
+			
         	function render() {
+        		 scene.traverse(function(child){
+    		        if (child instanceof THREE.SkinnedMesh){
+    		        	var s = document.getElementById("speed").value;
+    		        	for( var i = 0;i < child.skeleton.bones.length;i+=1){
+    		        		child.skeleton.bones[i].rotation.x += s/100 ;
+    		        		child.skeleton.bones[i].rotation.y += s/100 ;
+    		        		child.skeleton.bones[i].rotation.z += s/100 ;
+    		        	}
+    		        }
+    		        else if  (child instanceof THREE.SkeletonHelper){
+    		            child.update();
+    		        }
+    			}); 
             	requestAnimationFrame(render);
-            	model.rotation.x += 0.02;
-            	model.rotation.y += 0.02;
             	renderer.render(scene, camera);
         	}
-        	render();        	
-    	</script>
-    	<!-- <script type="text/javascript">
-      		$(function() {
-        //添加窗口尺寸改变响应监听
-        		$(window).resize(resizeCanvas);
-        //页面加载后先设置一下canvas大小
-       		 	resizeCanvas();
-      		});
- 
-      	//窗口尺寸改变响应（修改canvas大小）
-     	 	function resizeCanvas() {
-     	 		alert("hello");
-        		$('#WebGL canvas').attr("width", $("#WebGL").width);
-        		$('#WebGL canvas').attr("height", $("#WebGL").height);
-      		};
-    	</script>
-    	 -->
-    	
+        	render();         	
+        </script>    	
 	</div>
 </div>
 </body>
